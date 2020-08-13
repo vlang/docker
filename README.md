@@ -9,8 +9,9 @@ Works both with docker for linux and windows on x86 plattform.
 
 ## WIP
 
-- [x] Basic images and nightly builds
-- [ ] Provide examples of usage (vweb)
+- [x] Basic images 
+- [ ] Get nightly builds working
+- [ ] Provide examples of usage (vweb @smartiniOnGitHub example)
 
 ## Structure
 
@@ -71,6 +72,3 @@ Following images are built from this repo:
 | \[dist\]-build  | Used in V CI builds to build V itself. No V included in image.|
 | \[dist\]-dev  | Development build with all development dependecies on distributions.|
 
-## OS specific base images
-
-OS specific base images are built for specific distributions. They are named `[dist]-base`.
