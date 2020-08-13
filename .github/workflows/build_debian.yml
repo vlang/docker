@@ -1,0 +1,22 @@
+#### Publish to docker hub
+name: Build and deploy debian builder image
+on:
+  push:
+    branches:
+    - master
+    paths:
+      - '.github/workflows/build_debian.yml'
+      - 'docker/vlang/Dockerfile.buster.build'
+jobs:
+  deploy:
+    name: Checkout and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1  
+      - uses: docker/build-push-action@v1
+        with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_TOKEN }}
+            repository: thevlang/vlang
+            tags: buster-build
+            dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.buster.build

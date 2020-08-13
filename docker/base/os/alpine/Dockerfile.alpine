@@ -1,0 +1,17 @@
+# This is the dockerfile for generating base images for Alpine
+# contains the minimal dependencies needed for V to run
+FROM alpine:3.11.6
+
+LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+
+WORKDIR /opt/vlang
+
+ENV VVV  /opt/vlang
+ENV PATH /opt/vlang:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+RUN mkdir -p /opt/vlang && ln -s /opt/vlang/v /usr/bin/v
+
+RUN apk update && \
+    # Default base depenencies
+    apk add --no-cache openssl-dev sqlite-dev 
+

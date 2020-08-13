@@ -1,0 +1,20 @@
+# Builder image with alpine base, used as builder stage
+# for multi-stage builds. Also base for full dev image
+# - All dependecies
+# - clang compiler (and gcc needed for clang to work on alpine)
+# - nodejs for js backend
+
+# Stage 1 - Build the V-compiler
+FROM thevlang/vlang:alpine-base
+
+# Add the build dependencies
+RUN apk --no-cache add \
+    # Git support
+    git openssh-client \
+    # js back-end 
+    nodejs npm  \
+    # V-development dependencies
+    make musl-dev valgrind clang gcc \
+    # V-UI dependencies
+    libx11-dev glfw-dev freetype-dev 
+

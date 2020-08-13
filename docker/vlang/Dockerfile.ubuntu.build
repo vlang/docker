@@ -1,0 +1,22 @@
+# Generates builder with debian base 
+FROM thevlang/vlang:ubuntu-base AS builder 
+
+LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+
+WORKDIR /opt/vlang
+
+RUN apt-get update && \
+    echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections && \
+    apt-get install --no-install-recommends -y \
+    # Git support
+    git openssh-client \
+    # js back-end 
+    nodejs npm  \
+    # musl support \
+    musl musl-tools \
+    # V-development dependencies
+    clang valgrind make \
+    # V-UI dependencies
+    libx11-dev libglfw3-dev libfreetype6-dev && \
+    apt-get clean && rm -rf /var/cache/apt/archives/* && \
+    rm -rf /var/lib/apt/lists/*
