@@ -12,7 +12,7 @@ RUN apt-get update && \
     # js back-end 
     nodejs npm  \
     # V-development dependencies
-    clang valgrind make \
+    clang llvm-dev valgrind make \
     # V-UI dependencies
     libx11-dev libglfw3-dev libfreetype6-dev && \
     apt-get clean && rm -rf /var/cache/apt/archives/* && \

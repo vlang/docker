@@ -17,7 +17,7 @@ WORKDIR /opt/vlang
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    clang && \
+    clang llvm-dev && \
     apt-get clean && rm -rf /var/cache/apt/archives/* && \
     rm -rf /var/lib/apt/lists/*
 
