@@ -1,4 +1,4 @@
-# Generates builder with debian base 
+# Generates builder with ubuntu base
 FROM thevlang/vlang:ubuntu-base AS builder 
 
 LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
