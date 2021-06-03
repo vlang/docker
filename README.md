@@ -56,6 +56,48 @@ docker run \
   /bin/sh
 ```
 
+### Using Docker Compose
+
+Creating a container ready to go in.
+
+```yml
+version: "3"
+services:
+  v:
+    image: thevlang/vlang:alpine
+    tty: true # Keeps your container running
+    volumes:
+      - .:/home/v
+    working_dir: /home/v
+```
+
+Use it:
+
+```bash
+you@pc > docker-compose exec v sh
+$ v --version
+V 0.2.2 f4486d7
+```
+
+Creating a disposable container.
+
+```yml
+version: "3"
+services:
+  v:
+    image: thevlang/vlang:alpine
+    entrypoint: v
+    volumes:
+      - .:/home/v
+    working_dir: /home/v
+```
+
+Use it:
+
+```bash
+you@pc > docker-compose run v --version
+V 0.2.2 f4486d7
+```
 
 # Different images being built
 
