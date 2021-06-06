@@ -7,6 +7,8 @@ on:
     paths:
       - '.github/workflows/build_debian.yml'
       - 'docker/vlang/Dockerfile.buster.build'
+  workflow_dispatch:
+
 jobs:
   deploy:
     name: Checkout and deploy

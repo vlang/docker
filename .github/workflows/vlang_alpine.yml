@@ -7,6 +7,8 @@ on:
     paths:
       - '.github/workflows/vlang_alpine.yml'
       - '.docker/vlang/Dockerfile.alpine'
+  workflow_dispatch:
+
 jobs:
   deploy:
     name: Checkout and deploy

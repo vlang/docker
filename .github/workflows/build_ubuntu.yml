@@ -7,6 +7,8 @@ on:
     paths:
       - '.github/workflows/build_ubuntu.yml'
       - 'docker/vlang/Dockerfile.ubuntu.build'
+  workflow_dispatch:
+
 jobs:
   deploy:
     name: Checkout and deploy

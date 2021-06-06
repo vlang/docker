@@ -7,6 +7,8 @@ on:
     paths:
       - '.github/workflows/base_debian.yml'
       - 'docker/base/os/debian/Dockerfile.debian'
+  workflow_dispatch:
+
 jobs:
   deploy:
     name: Checkout and deploy

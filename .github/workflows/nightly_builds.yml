@@ -10,6 +10,7 @@ on:
       - ".github/workflows/nightly_builds.yml"
   schedule:
     - cron: "0 2 * * *" # run at 2 AM UTC
+
 jobs:
   deploy_latest:
     name: Checkout and deploy
