@@ -17,6 +17,14 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: docker/build-push-action@v1
+        name: Build and deploy Alpine
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          repository: thevlang/vlang
+          tags: alpine
+          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.alpine
+      - uses: docker/build-push-action@v1
         name: Build and deploy Debian Buster
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -25,13 +33,13 @@ jobs:
           tags: latest, buster
           dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.buster
       - uses: docker/build-push-action@v1
-        name: Build and deploy Alpine
+        name: Build and deploy Ubuntu Focal
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
-          tags: alpine
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.alpine
+          tags: latest, buster
+          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.ubuntu
       - uses: docker/build-push-action@v1
         name: Build and deploy developer build Alpine
         with:
@@ -41,10 +49,18 @@ jobs:
           tags: alpine-dev
           dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.alpine.dev-full
       - uses: docker/build-push-action@v1
-        name: Build and deploy developer build Debian BUster
+        name: Build and deploy developer build Debian Buster
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
           tags: buster-dev
           dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.buster.dev-full
+      - uses: docker/build-push-action@v1
+        name: Build and deploy developer build Ubuntu Focal
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          repository: thevlang/vlang
+          tags: buster-dev
+          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.ubuntu.dev-full
