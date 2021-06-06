@@ -19,3 +19,6 @@ RUN apt-get update && \
     clang llvm-dev tcc && \
     apt-get clean && rm -rf /var/cache/apt/archives/* && \
     rm -rf /var/lib/apt/lists/*
+
+# Copy the prebuilt V compiler
+COPY --from=builder /opt/vlang /opt/vlang
