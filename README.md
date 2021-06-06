@@ -1,6 +1,6 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/vlang/docker/Deploy%20nightly%20build%20to%20Dockerhub) 
-![Docker Pulls](https://img.shields.io/docker/pulls/thevlang/vlang)
-![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/thevlang/vlang)
+[![Docker Pulls](https://img.shields.io/docker/pulls/thevlang/vlang)](https://hub.docker.com/r/thevlang/vlang)
+[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/thevlang/vlang)](https://hub.docker.com/r/thevlang/vlang/tags?page=1&ordering=last_updated)
 
 # V programming language docker images source (Work in progress)
 The docker files for the V programming language. Please check individual `Dockerfile` for what is provided in detail
@@ -31,6 +31,10 @@ The images are deployed as `thevlang/vlang:tag`.
 [Here are installation instructions on ubuntu](https://docs.docker.com/engine/install/ubuntu/) but there are instructions for other distributions too.
 
 ## 2 Running the image
+
+### Choose your image
+
+Browse [thevlang/vlang](https://hub.docker.com/r/thevlang/vlang/tags?page=1&ordering=last_updated) on Docker Hub and choose your tag.
 
 ### Running the standard image
 
