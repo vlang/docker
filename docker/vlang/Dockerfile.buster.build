@@ -9,11 +9,19 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     # Git support
     git openssh-client \
-    # js back-end 
-    nodejs npm  \
     # V-development dependencies
     clang llvm-dev valgrind make \
     # V-UI dependencies
-    libx11-dev libglfw3-dev libfreetype6-dev && \
+    libx11-dev libglfw3-dev libfreetype6-dev \
+    # wget
+    wget \
+    # Certs
+    ca-certificates && \
+    # Get NodeJS setup script
+    wget -qO- "http://deb.nodesource.com/setup_14.x" | sh - && \
+    # Install NodeJS and clean up
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+    nodejs && \
     apt-get clean && rm -rf /var/cache/apt/archives/* && \
     rm -rf /var/lib/apt/lists/*
