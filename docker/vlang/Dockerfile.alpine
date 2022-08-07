@@ -10,16 +10,17 @@ WORKDIR /opt/vlang
 RUN git clone https://github.com/vlang/v /opt/vlang && make VFLAGS='-cc gcc' && v -version
 
 # Stage 2 - Make minimal runtime without git and make 
-#           we still nedd gcc and musl-dev for v to compile
+#           we still nedd gcc and musl-dev for v to compile;
+#           libexecinfo is needed for the bundled tcc to work;
+#           libc-dev is needed for the various C headers like inttypes.h .
 
 FROM thevlang/vlang:alpine-base AS runtime
 
 ENV VFLAGS="-cc gcc"
 
 RUN apk --no-cache add \
-    gcc musl-dev git
+    gcc musl-dev git libexecinfo-static libexecinfo-dev libc-dev
 
 
 # Copy the prebuilt V compiler
 COPY --from=builder /opt/vlang /opt/vlang
-
