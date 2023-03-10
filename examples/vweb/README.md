@@ -8,3 +8,5 @@ This example shows how to do a multi-stage build with official V docker images.
 
 - [x] Multi-stage build of image
 - [x] Compressed binary
+
+----

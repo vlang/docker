@@ -78,9 +78,9 @@ services:
 Use it:
 
 ```bash
-you@pc > docker-compose exec v sh
+you@pc > docker compose exec v sh
 $ v --version
-V 0.2.2 f4486d7
+V 0.3.3 32d0954
 ```
 
 Creating a disposable container.
@@ -99,8 +99,8 @@ services:
 Use it:
 
 ```bash
-you@pc > docker-compose run v --version
-V 0.2.2 f4486d7
+you@pc > docker compose run v --version
+V 0.3.3 32d0954
 ```
 
 # Different images being built
@@ -116,5 +116,6 @@ Following images are built from this repo:
 | ubuntu          | Nightly build of latest V on Ubuntu 20.04|
 | runtime-scratch | Minimal size scratch based image with runtime dependencies (soon supported)|
 | \[dist\]-build  | Used in V CI builds to build V itself. No V included in image.|
-| \[dist\]-dev  | Development build with all development dependecies on distributions.|
+| \[dist\]-dev    | Development build with all development dependecies on distributions.|
 
+----
