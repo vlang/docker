@@ -2,10 +2,11 @@
 
 FROM thevlang/vlang:alpine-build
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
 WORKDIR /opt/vlang
 
+# TODO: check if clone only last commit ... wip
 RUN git clone https://github.com/vlang/v /opt/vlang && \
     make VFLAGS='-cc gcc' && v -version && \
     mkdir /src

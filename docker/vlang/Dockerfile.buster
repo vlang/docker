@@ -1,18 +1,20 @@
 # Generates basic image with compiled V using clang as default
 FROM thevlang/vlang:buster-build AS builder 
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
 WORKDIR /opt/vlang
 
 # Install V
+# TODO: check if clone only last commit ... wip
 RUN git clone https://github.com/vlang/v /opt/vlang && make && v -version
 
 
 FROM thevlang/vlang:buster-base AS runtime 
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
+# TODO: check if change to a source folder ... wip
 WORKDIR /opt/vlang
 
 RUN apt-get update && \

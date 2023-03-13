@@ -2,7 +2,7 @@
 
 FROM thevlang/vlang:buster-build
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
 WORKDIR /opt/vlang
 

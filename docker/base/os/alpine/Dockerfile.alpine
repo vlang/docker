@@ -2,7 +2,7 @@
 # contains the minimal dependencies needed for V to run
 FROM alpine:3.17
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
 WORKDIR /opt/vlang
 

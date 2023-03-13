@@ -1,7 +1,7 @@
 # Generates builder with debian base 
 FROM thevlang/vlang:buster-base AS builder 
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
 WORKDIR /opt/vlang
 
