@@ -111,8 +111,8 @@ Following images are built from this repo:
 | --------------- | ----------------- |
 | latest          | Nightly build of latest V on Debian Buster|
 | \[githash\]     | The sha commit id built (soon supported)|
+| alpine          | Nightly build of latest V on Alpine 3.17 |
 | buster          | Nightly build of latest V on Debian Buster|
-| alpine          | Nightly build of latest V on Alpine 3.11 |
 | ubuntu          | Nightly build of latest V on Ubuntu 20.04|
 | runtime-scratch | Minimal size scratch based image with runtime dependencies (soon supported)|
 | \[dist\]-build  | Used in V CI builds to build V itself. No V included in image.|
