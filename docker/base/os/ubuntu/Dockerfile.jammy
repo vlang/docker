@@ -1,6 +1,6 @@
-# This is the dockerfile for generating base images for ubuntu Focal Fossa
+# This is the dockerfile for generating base images for ubuntu Jammy Jellyfish
 # contains the minimal dependencies needed for V to run
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
