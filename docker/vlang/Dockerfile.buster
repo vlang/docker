@@ -6,8 +6,7 @@ LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>,
 WORKDIR /opt/vlang
 
 # Install V
-# TODO: check if clone only last commit ... wip
-RUN git clone https://github.com/vlang/v /opt/vlang && make && v -version
+RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && make && v -version
 
 
 FROM thevlang/vlang:buster-base AS runtime 
@@ -25,3 +24,5 @@ RUN apt-get update && \
 
 # Copy the prebuilt V compiler
 COPY --from=builder /opt/vlang /opt/vlang
+
+# TODO: check if change to a source folder ... wip

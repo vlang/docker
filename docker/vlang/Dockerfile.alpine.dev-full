@@ -4,10 +4,10 @@ FROM thevlang/vlang:alpine-build
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
+# TODO: check if change to a source folder ... wip
 WORKDIR /opt/vlang
 
-# TODO: check if clone only last commit ... wip
-RUN git clone https://github.com/vlang/v /opt/vlang && \
+RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && \
     make VFLAGS='-cc gcc' && v -version && \
     mkdir /src
 

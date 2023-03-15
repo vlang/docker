@@ -3,6 +3,7 @@ FROM thevlang/vlang:buster-base AS builder
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
+# TODO: check if change to a source folder ... wip
 WORKDIR /opt/vlang
 
 RUN apt-get update && \

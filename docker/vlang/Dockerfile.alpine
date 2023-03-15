@@ -7,7 +7,7 @@ FROM thevlang/vlang:alpine-build AS builder
 
 WORKDIR /opt/vlang
 
-RUN git clone https://github.com/vlang/v /opt/vlang && make VFLAGS='-cc gcc' && v -version
+RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && make VFLAGS='-cc gcc' && v -version
 
 # Stage 2 - Make minimal runtime without git and make 
 #           we still nedd gcc and musl-dev for v to compile;
