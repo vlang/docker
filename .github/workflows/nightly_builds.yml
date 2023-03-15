@@ -16,8 +16,8 @@ jobs:
     name: Checkout and deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: docker/build-push-action@v1
+      - uses: actions/checkout@v3
+      - uses: docker/build-push-action@v4
         name: Build and deploy Alpine
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -25,23 +25,23 @@ jobs:
           repository: thevlang/vlang
           tags: alpine
           dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.alpine
-      - uses: docker/build-push-action@v1
-        name: Build and deploy Debian Buster
+      - uses: docker/build-push-action@v4
+        name: Build and deploy Debian Bullseye
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
-          tags: latest, buster
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.buster
-      - uses: docker/build-push-action@v1
+          tags: latest, bullseye
+          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.bullseye
+      - uses: docker/build-push-action@v4
         name: Build and deploy Ubuntu Focal
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
-          tags: latest, buster
+          tags: latest, bullseye
           dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.ubuntu
-      - uses: docker/build-push-action@v1
+      - uses: docker/build-push-action@v4
         name: Build and deploy developer build Alpine
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -49,20 +49,19 @@ jobs:
           repository: thevlang/vlang
           tags: alpine-dev
           dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.alpine.dev-full
-      - uses: docker/build-push-action@v1
-        name: Build and deploy developer build Debian Buster
+      - uses: docker/build-push-action@v4
+        name: Build and deploy developer build Debian Bullseye
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
-          tags: buster-dev
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.buster.dev-full
-      - uses: docker/build-push-action@v1
+          tags: bullseye-dev
+          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.bullseye.dev-full
+      - uses: docker/build-push-action@v4
         name: Build and deploy developer build Ubuntu Focal
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
-          tags: buster-dev
+          tags: bullseye-dev
           dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.ubuntu.dev-full
-
