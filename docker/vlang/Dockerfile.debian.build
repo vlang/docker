@@ -1,5 +1,5 @@
 # Generates builder with debian base 
-FROM thevlang/vlang:buster-base AS builder 
+FROM thevlang/vlang:debian-base AS builder 
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 

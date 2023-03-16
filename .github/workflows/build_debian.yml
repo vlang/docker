@@ -20,5 +20,5 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_TOKEN }}
             repository: thevlang/vlang
-            tags: bullseye-build
+            tags: debian-build
             dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.bullseye.build

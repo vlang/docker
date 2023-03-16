@@ -1,5 +1,5 @@
 # Generates basic image with compiled V using clang as default
-FROM thevlang/vlang:buster-build AS builder 
+FROM thevlang/vlang:debian-build AS builder 
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
@@ -9,7 +9,7 @@ WORKDIR /opt/vlang
 RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && make && v -version
 
 
-FROM thevlang/vlang:buster-base AS runtime 
+FROM thevlang/vlang:debian-base AS runtime 
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 

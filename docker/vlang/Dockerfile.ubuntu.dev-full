@@ -1,13 +1,14 @@
-# Generates basic image with compiled V using tcc
+# Generates development image based on Ubuntu, with V compiled using clang
 FROM thevlang/vlang:ubuntu-build
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
-# TODO: check if change to a source folder ... wip
-WORKDIR /opt/vlang
-
 # TODO: install even dependencies (and related tools) for WASM ... wip
+
+WORKDIR /opt/vlang
 
 RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && \ 
     make CC=clang && v -version && \
     mkdir /src
+
+WORKDIR /src

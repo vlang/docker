@@ -20,5 +20,5 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_TOKEN }}
             repository: thevlang/vlang
-            tags: ubuntu-base
+            tags: suse-base
             dockerfile: ${{github.workspace}}/docker/base/os/suse/Dockerfile.tumbleweed
