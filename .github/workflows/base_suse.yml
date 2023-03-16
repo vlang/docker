@@ -1,12 +1,12 @@
 #### Publish to docker hub 
-name: Build and deploy debian base images
+name: Build and deploy SuSE Tumbleweed base images
 on:
   push:
     branches:
     - master
     paths:
-      - '.github/workflows/base_debian.yml'
-      - 'docker/base/os/debian/Dockerfile.bullseye'
+      - '.github/workflows/base_suse.yml'
+      - 'docker/base/os/suse/Dockerfile.tumbleweed'
   workflow_dispatch:
 
 jobs:
@@ -20,5 +20,5 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_TOKEN }}
             repository: thevlang/vlang
-            tags: bullseye-base
-            dockerfile: ${{github.workspace}}/docker/base/os/debian/Dockerfile.bullseye
+            tags: ubuntu-base
+            dockerfile: ${{github.workspace}}/docker/base/os/suse/Dockerfile.tumbleweed
