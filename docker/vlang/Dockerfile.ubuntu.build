@@ -21,7 +21,7 @@ RUN apt-get update && \
     # Certs
     ca-certificates && \
     # Get NodeJS setup script
-    wget -qO- "http://deb.nodesource.com/setup_14.x" | sh - && \
+    wget -qO- "http://deb.nodesource.com/setup_18.x" | sh - && \
     # Install NodeJS and clean up
     apt-get update && \
     apt-get install --no-install-recommends -y \
