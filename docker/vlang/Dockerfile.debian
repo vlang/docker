@@ -13,7 +13,6 @@ FROM thevlang/vlang:debian-base AS runtime
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
-# TODO: check if change to a source folder ... wip
 WORKDIR /opt/vlang
 
 RUN apt-get update && \
@@ -25,4 +24,4 @@ RUN apt-get update && \
 # Copy the prebuilt V compiler
 COPY --from=builder /opt/vlang /opt/vlang
 
-# TODO: check if change to a source folder ... wip
+WORKDIR /src

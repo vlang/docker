@@ -24,4 +24,4 @@ RUN apk --no-cache add \
 # Copy the prebuilt V compiler
 COPY --from=builder /opt/vlang /opt/vlang
 
-# TODO: check if change/add WORKDIR to a source folder ... wip
+WORKDIR /src

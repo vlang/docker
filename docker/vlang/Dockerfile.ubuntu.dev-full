@@ -3,8 +3,6 @@ FROM thevlang/vlang:ubuntu-build
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
-# TODO: install even dependencies (and related tools) for WASM ... wip
-
 WORKDIR /opt/vlang
 
 RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && \ 
