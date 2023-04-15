@@ -1,12 +1,12 @@
 #### Publish to docker hub
-name: Build and deploy debian builder image
+name: Build and deploy Debian builder image
 on:
   push:
     branches:
     - master
     paths:
       - '.github/workflows/build_debian.yml'
-      - 'docker/vlang/Dockerfile.buster.build'
+      - 'docker/vlang/Dockerfile.debian.build'
   workflow_dispatch:
 
 jobs:
@@ -21,4 +21,4 @@ jobs:
             password: ${{ secrets.DOCKER_TOKEN }}
             repository: thevlang/vlang
             tags: debian-build
-            dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.bullseye.build
+            dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.debian.build

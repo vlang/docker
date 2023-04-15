@@ -126,6 +126,8 @@ Following images are built from this repo:
 
 # Note
 
+## Manually build images
+
 In this repository there are many Dockerfiles; to build images manually (for example to develop/debug/test them), do something like:
 - choose an OS, for example Debian
 - create the base image:
@@ -153,6 +155,10 @@ docker run --rm -it -v $(pwd):/src thevlang/vlang:debian-dev
 # then try to build/test/run them ...
 exit
 ```
+
+## Old images
+
+Previous images (already published) had OS code name in the image tag, but are no more created/updated; please do not use them anymore.
 
 
 ----

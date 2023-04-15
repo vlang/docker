@@ -6,7 +6,7 @@ on:
     - master
     paths:
       - '.github/workflows/base_ubuntu.yml'
-      - 'docker/base/os/ubuntu/Dockerfile.jammy'
+      - 'docker/base/os/ubuntu/Dockerfile.ubuntu'
   workflow_dispatch:
 
 jobs:
@@ -21,4 +21,4 @@ jobs:
             password: ${{ secrets.DOCKER_TOKEN }}
             repository: thevlang/vlang
             tags: ubuntu-base
-            dockerfile: ${{github.workspace}}/docker/base/os/ubuntu/Dockerfile.jammy
+            dockerfile: ${{github.workspace}}/docker/base/os/ubuntu/Dockerfile.ubuntu
