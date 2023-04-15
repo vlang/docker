@@ -1,6 +1,6 @@
-# This is the dockerfile for generating base images for Buster
+# This is the dockerfile for generating base images for latest Debian stable
 
-FROM debian:buster
+FROM debian:latest
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 

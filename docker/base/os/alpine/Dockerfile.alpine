@@ -1,6 +1,6 @@
-# This is the dockerfile for generating base images for Alpine
+# This is the dockerfile for generating base images for latest Alpine
 # contains the minimal dependencies needed for V to run
-FROM alpine:3.17
+FROM alpine:latest
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 

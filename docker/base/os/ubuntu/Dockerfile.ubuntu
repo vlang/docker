@@ -1,6 +1,6 @@
-# This is the dockerfile for generating base images for ubuntu Jammy Jellyfish
+# This is the dockerfile for generating base images for for latest Ubuntu LTS
 # contains the minimal dependencies needed for V to run
-FROM ubuntu:22.04
+FROM ubuntu:latest
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
