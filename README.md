@@ -135,6 +135,11 @@ In this repository there are many Dockerfiles; to build images manually (for exa
 docker pull debian # force a pull, could be useful if already downloaded but not updated recently
 docker build -t thevlang/vlang:debian-base -f ./docker/base/os/debian/Dockerfile.debian .
 ```
+by default 'latest' OS image is used.
+To build with a specific OS release, specify it as a build argument, for example:
+```
+docker build --build-arg OS_RELEASE=buster -t thevlang/vlang:debian-base -f ./docker/base/os/debian/Dockerfile.debian .
+```
 - create the build image (with all dependencies inside):
 ```
 docker build -t thevlang/vlang:debian-build -f ./docker/vlang/Dockerfile.debian.build .

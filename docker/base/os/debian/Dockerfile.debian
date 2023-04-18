@@ -1,6 +1,7 @@
 # This is the dockerfile for generating base images for latest Debian stable
-
-FROM debian:latest
+# contains the minimal dependencies needed for V to run
+ARG OS_RELEASE=latest
+FROM debian:${OS_RELEASE}
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
@@ -13,7 +14,7 @@ RUN mkdir -p /opt/vlang && ln -s /opt/vlang/v /usr/bin/v
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive && \
-    # Default base depenencies
+    # Default base dependencies
     apt-get install -y --no-install-recommends libssl-dev libsqlite3-dev && \
     # Clean 
     apt-get clean && rm -rf /var/cache/apt/archives/* && \

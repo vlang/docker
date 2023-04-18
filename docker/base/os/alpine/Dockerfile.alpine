@@ -1,6 +1,7 @@
 # This is the dockerfile for generating base images for latest Alpine
 # contains the minimal dependencies needed for V to run
-FROM alpine:latest
+ARG OS_RELEASE=latest
+FROM alpine:${OS_RELEASE}
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
@@ -12,6 +13,6 @@ ENV PATH /opt/vlang:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 RUN mkdir -p /opt/vlang && ln -s /opt/vlang/v /usr/bin/v
 
 RUN apk update && \
-    # Default base depenencies
+    # Default base dependencies
     apk add --no-cache openssl-dev sqlite-dev 
 
