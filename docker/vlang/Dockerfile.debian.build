@@ -13,6 +13,8 @@ RUN apt-get update && \
     clang llvm-dev valgrind make \
     # V-UI dependencies
     libx11-dev libglfw3-dev libfreetype6-dev \
+    # compilation/optimization utilities
+    upx \
     # wget
     wget \
     # Certs

@@ -16,4 +16,6 @@ RUN apk --no-cache add \
     # V-development dependencies
     make musl-dev valgrind clang gcc \
     # V-UI dependencies
-    libx11-dev glfw-dev freetype-dev 
+    libx11-dev glfw-dev freetype-dev \
+    # compilation/optimization utilities
+    upx
