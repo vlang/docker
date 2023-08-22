@@ -1,6 +1,6 @@
 # This is the dockerfile for generating base images for Alpine
 # contains the minimal dependencies needed for V to run
-FROM alpine:3.11.6
+FROM alpine:3.18
 
 LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
 
