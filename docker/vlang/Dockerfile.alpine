@@ -19,7 +19,8 @@ FROM thevlang/vlang:alpine-base AS runtime
 ENV VFLAGS="-cc gcc"
 
 RUN apk --no-cache add \
-    gcc musl-dev git libexecinfo-static libexecinfo-dev libc-dev
+    gcc musl-dev git libc-dev
+# libexecinfo-static libexecinfo-dev : was removed since Alpine 3.17, check if still needed or remove this line
 
 # Copy the prebuilt V compiler
 COPY --from=builder /opt/vlang /opt/vlang
