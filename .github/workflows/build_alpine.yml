@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  PLATFORMS: linux/amd64,linux/arm64
+  PLATFORMS: {{ vars.PLATFORMS }}
 
 jobs:
   deploy:
