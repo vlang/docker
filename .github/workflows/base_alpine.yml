@@ -33,3 +33,4 @@ jobs:
             tags: ${{ secrets.DOCKER_USERNAME }}/vlang:base-alpine
             push: true
             file: docker/base/os/alpine/Dockerfile.alpine
+            build-args: "USER=${{secrets.DOCKER_USERNAME}}"
