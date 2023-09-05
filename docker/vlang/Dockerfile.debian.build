@@ -1,7 +1,10 @@
-# Generates builder with debian base 
-FROM thevlang/vlang:buster-base AS builder 
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+ARG USER=thevlang
+
+# Stage 1 - Build the V-compiler
+FROM ${USER}/vlang:debian-base AS builder
+
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
 WORKDIR /opt/vlang
 
@@ -18,7 +21,7 @@ RUN apt-get update && \
     # Certs
     ca-certificates && \
     # Get NodeJS setup script
-    wget -qO- "http://deb.nodesource.com/setup_14.x" | sh - && \
+    wget -qO- "http://deb.nodesource.com/setup_18.x" | sh - && \
     # Install NodeJS and clean up
     apt-get update && \
     apt-get install --no-install-recommends -y \

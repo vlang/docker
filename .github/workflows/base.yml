@@ -37,7 +37,6 @@ jobs:
       - uses: docker/build-push-action@v4
         with:
             platforms: ${{ env.PLATFORMS}}
-            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:base-${{ matrix.os }}
+            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:${{ matrix.os }}-base
             push: true
             file: docker/base/Dockerfile.${{ matrix.os }}
-            build-args: "USER=${{secrets.DOCKER_USERNAME}}"

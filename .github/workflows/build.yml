@@ -1,21 +1,28 @@
 #### Publish to docker hub
-name: Build and deploy Alpine builder image
+name: Build and deploy All builder image
 on:
   push:
     branches:
     - master
+    - feature/matrixing
     paths:
-      - '.github/workflows/build_alpine.yml'
-      - 'docker/vlang/Dockerfile.alpine'
+      - '.github/workflows/build.yml'
+      - 'docker/vlang/Dockerfile.alpine.build'
+      - 'docker/vlang/Dockerfile.debian.build'
   workflow_dispatch:
 
 env:
-  PLATFORMS: {{ vars.PLATFORMS }}
+  PLATFORMS: ${{ vars.PLATFORMS }}
 
 jobs:
   deploy:
     name: Checkout and deploy
     runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        os:
+          - alpine
+          - debian
     steps:
       - uses: actions/checkout@v1
       - name: Set up QEMU
@@ -30,6 +37,7 @@ jobs:
       - uses: docker/build-push-action@v4
         with:
             platforms: ${{ env.PLATFORMS}}
-            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:alpine-build
+            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:${{ matrix.os}}-build
             push: true
-            file: docker/vlang/Dockerfile.alpine
+            file: docker/vlang/Dockerfile.${{ matrix.os }}.build
+            build-args: "USER=${{secrets.DOCKER_USERNAME}}"

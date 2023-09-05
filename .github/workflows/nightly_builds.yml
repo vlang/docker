@@ -11,10 +11,18 @@ on:
   schedule:
     - cron: "0 2 * * *" # run at 2 AM UTC
 
+env:
+  PLATFORMS: ${{ vars.PLATFORMS }}
+
 jobs:
   deploy_latest:
     name: Checkout and deploy
     runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        os:
+          - alpine
+          - debian
     steps:
       - uses: actions/checkout@v1
       - uses: docker/build-push-action@v1
@@ -23,45 +31,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
-          tags: alpine
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.alpine
-      - uses: docker/build-push-action@v1
-        name: Build and deploy Debian Buster
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-          repository: thevlang/vlang
-          tags: latest, buster
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.buster
-      - uses: docker/build-push-action@v1
-        name: Build and deploy Ubuntu Focal
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-          repository: thevlang/vlang
-          tags: latest, buster
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.ubuntu
+          tags: ${{ matrix.os }}
+          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.${{ matrix.os }}
       - uses: docker/build-push-action@v1
         name: Build and deploy developer build Alpine
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: thevlang/vlang
-          tags: alpine-dev
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.alpine.dev-full
-      - uses: docker/build-push-action@v1
-        name: Build and deploy developer build Debian Buster
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-          repository: thevlang/vlang
-          tags: buster-dev
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.buster.dev-full
-      - uses: docker/build-push-action@v1
-        name: Build and deploy developer build Ubuntu Focal
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-          repository: thevlang/vlang
-          tags: buster-dev
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.ubuntu.dev-full
+          tags: ${{ matrix.os }}-dev
+          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.${{ matrix.os }}.dev-full
