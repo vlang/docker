@@ -30,7 +30,7 @@ jobs:
       - uses: docker/build-push-action@v4
         with:
             platforms: ${{ env.PLATFORMS}}
-            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:base-alpine
+            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:alpine-alpine
             push: true
             file: docker/base/os/alpine/Dockerfile.alpine
             build-args: "USER=${{secrets.DOCKER_USERNAME}}"
