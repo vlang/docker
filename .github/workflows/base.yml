@@ -7,8 +7,8 @@ on:
     - feature/matrixing
     paths:
       - '.github/workflows/base.yml'
-      - 'docker/base/os/alpine/Dockerfile.alpine'
-      - 'docker/base/os/alpine/Dockerfile.debian'
+      - 'docker/base/Dockerfile.alpine'
+      - 'docker/base/Dockerfile.debian'
   workflow_dispatch:
 
 env:
@@ -39,5 +39,5 @@ jobs:
             platforms: ${{ env.PLATFORMS}}
             tags: ${{ secrets.DOCKER_USERNAME }}/vlang:base-${{ matrix.os }}
             push: true
-            file: docker/base/os/${{ matrix.os }}/Dockerfile.${{ matrix.os }}
+            file: docker/base/Dockerfile.${{ matrix.os }}
             build-args: "USER=${{secrets.DOCKER_USERNAME}}"
