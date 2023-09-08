@@ -1,6 +1,6 @@
 # This is the dockerfile for generating base images for Buster
 
-FROM debian:buster
+FROM debian:12
 
 LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
 

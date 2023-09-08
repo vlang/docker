@@ -3,7 +3,6 @@
 # - gcc compiler (only works on alpine)
 
 ARG USER=thevlang
-
 # Stage 1 - Build the V-compiler
 FROM ${USER}/vlang:alpine-build AS builder
 

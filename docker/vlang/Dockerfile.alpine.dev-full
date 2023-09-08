@@ -1,12 +1,13 @@
-# Generates development image using Alpine base
+ARG USER=thevlang
 
-FROM thevlang/vlang:alpine-build
+# Generates development image based on Alpine, with V compiled using clang
+FROM ${USER}/vlang:alpine-build
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
 WORKDIR /opt/vlang
 
-RUN git clone https://github.com/vlang/v /opt/vlang && \
+RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && \
     make VFLAGS='-cc gcc' && v -version && \
     mkdir /src
 
