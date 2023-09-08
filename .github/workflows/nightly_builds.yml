@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - master
+      - feature/matrixing
     paths:
       - ".github/workflows/nightly_builds.yml"
   schedule:
@@ -25,19 +26,27 @@ jobs:
           - debian
     steps:
       - uses: actions/checkout@v1
-      - uses: docker/build-push-action@v1
-        name: Build and deploy Alpine
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-          repository: thevlang/vlang
-          tags: ${{ matrix.os }}
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.${{ matrix.os }}
-      - uses: docker/build-push-action@v1
-        name: Build and deploy developer build Alpine
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_TOKEN }}
+      - uses: docker/build-push-action@v4
+        name: Build and deploy v image
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-          repository: thevlang/vlang
-          tags: ${{ matrix.os }}-dev
-          dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.${{ matrix.os }}.dev-full
+          platforms: ${{ env.PLATFORMS }}
+          tags: ${{secrets.DOCKER_USERNAME}}/vlang:${{ matrix.os }}
+          file: docker/vlang/Dockerfile.${{ matrix.os }}
+          push: true
+          build-args: "USER=${{secrets.DOCKER_USERNAME}}"
+      - uses: docker/build-push-action@v4
+        name: Build and deploy developer build
+        with:
+          platforms: ${{ env.PLATFORMS }}
+          tags: ${{secrets.DOCKER_USERNAME}}/vlang:${{ matrix.os }}-dev
+          file: docker/vlang/Dockerfile.${{ matrix.os }}.dev-full
+          build-args: "USER=${{secrets.DOCKER_USERNAME}}"

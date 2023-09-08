@@ -2,8 +2,9 @@
 # - No UI dependencies
 # - gcc compiler (only works on alpine)
 
+ARG USER=thevlang
 # Stage 1 - Build the V-compiler
-FROM thevlang/vlang:alpine-build AS builder
+FROM ${USER}/vlang:alpine-build AS builder
 
 WORKDIR /opt/vlang
 
@@ -14,7 +15,7 @@ RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && make VFLAGS='-c
 #           libexecinfo is needed for the bundled tcc to work;
 #           libc-dev is needed for the various C headers like inttypes.h .
 
-FROM thevlang/vlang:alpine-base AS runtime
+FROM ${USER}/vlang:alpine-base AS runtime
 
 ENV VFLAGS="-cc gcc"
 

@@ -1,5 +1,7 @@
+ARG USER=thevlang
+
 # Generates development image based on Alpine, with V compiled using clang
-FROM thevlang/vlang:alpine-build
+FROM ${USER}/vlang:alpine-build
 
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
 
