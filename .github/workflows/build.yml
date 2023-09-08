@@ -10,9 +10,6 @@ on:
       - 'docker/vlang/Dockerfile.debian.build'
   workflow_dispatch:
 
-env:
-  PLATFORMS: ${{ vars.PLATFORMS }}
-
 jobs:
   deploy:
     name: Checkout and deploy
@@ -35,8 +32,8 @@ jobs:
             password: ${{ secrets.DOCKER_TOKEN }}
       - uses: docker/build-push-action@v4
         with:
-            platforms: ${{ env.PLATFORMS}}
+            platforms: ${{ vars.PLATFORMS}}
             tags: ${{ secrets.DOCKER_USERNAME }}/vlang:${{ matrix.os}}-build
             push: true
             file: docker/vlang/Dockerfile.${{ matrix.os }}.build
-            build-args: "USER=${{secrets.DOCKER_USERNAME}}"
+            build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
