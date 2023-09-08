@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    pull_request:
     paths:
       - '.github/workflows/build.yml'
       - 'docker/vlang/Dockerfile.alpine.build'
@@ -34,6 +35,6 @@ jobs:
         with:
             platforms: ${{ vars.PLATFORMS}}
             tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os}}-build
-            push: true
+            push: ${{ github.event_name != 'pull_request' }}
             file: docker/vlang/Dockerfile.${{ matrix.os }}.build
             build-args: "USER=${{vars.DOCKER_REPOSITORY}}"

@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    pull_request:
     paths:
       - '.github/workflows/base.yml'
       - 'docker/base/Dockerfile.alpine'
@@ -34,5 +35,5 @@ jobs:
         with:
             platforms: ${{ vars.PLATFORMS}}
             tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-base
-            push: true
+            push: ${{ github.event_name != 'pull_request' }}
             file: docker/base/Dockerfile.${{ matrix.os }}

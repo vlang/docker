@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - master
+    pull_request:
     paths:
       - ".github/workflows/nightly_builds.yml"
   schedule:
@@ -37,7 +38,7 @@ jobs:
           platforms: ${{ vars.PLATFORMS }}
           tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}
           file: docker/vlang/Dockerfile.${{ matrix.os }}
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
       - uses: docker/build-push-action@v4
         name: Build and deploy developer build
@@ -46,3 +47,4 @@ jobs:
           tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-dev
           file: docker/vlang/Dockerfile.${{ matrix.os }}.dev-full
           build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
+          push: ${{ github.event_name != 'pull_request' }}
