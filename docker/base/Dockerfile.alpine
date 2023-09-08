@@ -13,5 +13,5 @@ RUN mkdir -p /opt/vlang && ln -s /opt/vlang/v /usr/bin/v
 
 RUN apk update && \
     # Default base depenencies
-    apk add --no-cache openssl-dev sqlite-dev 
+    apk add --no-cache openssl-dev sqlite-dev libc6-compat 
 
