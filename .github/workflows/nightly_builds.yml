@@ -7,6 +7,7 @@ on:
     branches:
       - master
     pull_request:
+      branches: [master] 
     paths:
       - ".github/workflows/nightly_builds.yml"
   schedule:
