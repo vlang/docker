@@ -33,7 +33,7 @@ jobs:
       - uses: docker/build-push-action@v4
         with:
             platforms: ${{ vars.PLATFORMS}}
-            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:${{ matrix.os}}-build
+            tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os}}-build
             push: true
             file: docker/vlang/Dockerfile.${{ matrix.os }}.build
             build-args: "USER=${{vars.DOCKER_REPOSITORY}}"

@@ -33,6 +33,6 @@ jobs:
       - uses: docker/build-push-action@v4
         with:
             platforms: ${{ vars.PLATFORMS}}
-            tags: ${{ secrets.DOCKER_USERNAME }}/vlang:${{ matrix.os }}-base
+            tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-base
             push: true
             file: docker/base/Dockerfile.${{ matrix.os }}

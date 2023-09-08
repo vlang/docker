@@ -35,7 +35,7 @@ jobs:
         name: Build and deploy v image
         with:
           platforms: ${{ vars.PLATFORMS }}
-          tags: ${{secrets.DOCKER_USERNAME}}/vlang:${{ matrix.os }}
+          tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}
           file: docker/vlang/Dockerfile.${{ matrix.os }}
           push: true
           build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
@@ -43,6 +43,6 @@ jobs:
         name: Build and deploy developer build
         with:
           platforms: ${{ vars.PLATFORMS }}
-          tags: ${{secrets.DOCKER_USERNAME}}/vlang:${{ matrix.os }}-dev
+          tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-dev
           file: docker/vlang/Dockerfile.${{ matrix.os }}.dev-full
           build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
