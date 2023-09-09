@@ -33,11 +33,19 @@ jobs:
         with:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_TOKEN }}
+      - name: generate tags conditionally
+        id: gen_tags
+        run: |
+          if [[ ${{ matrix.os }} == 'debian' ]]; then
+            echo 'TAGS=${{ vars.DOCKER_REPOSITORY }}/vlang:latest,${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}' >> $GITHUB_OUTPUT
+          else
+            echo 'TAGS=${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}' >> $GITHUB_OUTPUT
+          fi
       - uses: docker/build-push-action@v4
         name: Build and deploy v image
         with:
           platforms: ${{ vars.PLATFORMS }}
-          tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}
+          tags: ${{ steps.gen_tags.outputs.TAGS }}
           file: docker/vlang/Dockerfile.${{ matrix.os }}
           push: ${{ github.event_name != 'pull_request' }}
           build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
