@@ -1,0 +1,52 @@
+FROM alpine:latest AS vlang-sdk
+MAINTAINER msheriffusa <msheriffusa@gmail.com>
+
+WORKDIR /opt/v/
+
+# 215MB
+RUN apk add --update alpine-sdk
+
+# 30MB
+RUN wget https://github.com/vlang/v/releases/download/0.4.4/v_linux.zip -O /opt/v.zip
+# 90MB
+RUN unzip /opt/v.zip -d /opt/
+
+RUN make && ./v symlink
+
+# delete files not required in a docker run image
+RUN rm -rf doc
+RUN rm -rf examples/
+RUN rm -rf tutorials/
+RUN rm -rf vc
+RUN rm -rf ./vlib/v/tests/
+RUN rm -rf ./vlib/v/slow_tests/
+RUN rm -rf ./vlib/v/embed_file/tests/
+RUN rm -rf ./cmd/tools/vdoc/tests
+RUN rm -rf ./cmd/tools/vcreate/tests
+RUN rm -rf ./cmd/tools/vvet/tests
+RUN rm -rf ./vlib/v/scanner/tests/
+RUN rm -rf ./vlib/v/fmt/tests
+RUN rm -rf ./vlib/v/checker/tests
+RUN rm -rf ./vlib/v/gen/native/tests
+RUN rm -rf ./vlib/v/gen/wasm/tests
+RUN rm -rf ./vlib/v/gen/js/tests
+RUN rm -rf ./vlib/v/eval/tests
+RUN rm -rf ./vlib/v/gen/golang/tests
+RUN rm -rf ./vlib/v/parser/tests/
+RUN rm -rf ./vlib/toml/tests/
+RUN rm -rf ./vlib/net/websocket/tests
+RUN rm -rf ./vlib/x/vweb/tests
+RUN rm -rf ./vlib/vweb/tests
+RUN rm -rf ./vlib/v2/tests
+RUN rm -rf ./vlib/wasm/tests
+
+FROM alpine:latest AS vlang
+MAINTAINER msheriffusa <msheriffusa@gmail.com>
+WORKDIR /opt/
+# 90MB
+COPY --from=vlang-sdk /opt/v/ .
+# 215MB
+RUN apk add --update alpine-sdk
+RUN ./v symlink
+
+CMD ["v"]
