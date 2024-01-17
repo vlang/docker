@@ -11,7 +11,7 @@ RUN wget https://github.com/vlang/v/releases/download/0.4.4/v_linux.zip -O /opt/
 # 90MB
 RUN unzip /opt/v.zip -d /opt/
 
-RUN make && ./v symlink
+RUN make
 
 # delete files not required in a docker run image
 RUN rm -rf doc
