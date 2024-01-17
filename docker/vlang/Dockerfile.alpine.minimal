@@ -15,7 +15,16 @@ RUN unzip /opt/v.zip -d /opt/
 RUN make
 
 # delete files not required in a docker run image (removes 25 dirs)
-RUN rm -rf doc examples/ tutorials/ vc/ ./vlib/v/tests/ ./vlib/v/slow_tests/ ./vlib/v/embed_file/tests/ ./cmd/tools/vdoc/tests ./cmd/tools/vcreate/tests ./cmd/tools/vvet/tests ./vlib/v/scanner/tests/ ./vlib/v/fmt/tests ./vlib/v/checker/tests ./vlib/v/gen/native/tests ./vlib/v/gen/wasm/tests ./vlib/v/gen/js/tests ./vlib/v/eval/tests ./vlib/v/gen/golang/tests ./vlib/v/parser/tests/ ./vlib/toml/tests/ ./vlib/net/websocket/tests ./vlib/x/vweb/tests ./vlib/vweb/tests ./vlib/v2/tests ./vlib/wasm/tests
+RUN rm -rf doc examples/ tutorials/ vc/ ./vlib/v/tests/ \
+    ./vlib/v/slow_tests/ ./vlib/v/embed_file/tests/ \
+    ./cmd/tools/vdoc/tests ./cmd/tools/vcreate/tests \
+    ./cmd/tools/vvet/tests ./vlib/v/scanner/tests/ \
+    ./vlib/v/fmt/tests ./vlib/v/checker/tests \
+    ./vlib/v/gen/native/tests ./vlib/v/gen/wasm/tests \
+    ./vlib/v/gen/js/tests ./vlib/v/eval/tests \
+    ./vlib/v/gen/golang/tests ./vlib/v/parser/tests/ \
+    ./vlib/toml/tests/ ./vlib/net/websocket/tests \
+    ./vlib/x/vweb/tests ./vlib/vweb/tests ./vlib/v2/tests ./vlib/wasm/tests
 
 FROM alpine:latest AS vlang
 MAINTAINER msheriffusa <msheriffusa@gmail.com>
