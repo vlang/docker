@@ -1,29 +1,76 @@
-# Minimal image for compiling V programs
-# - No UI dependencies
-# - gcc compiler (only works on alpine)
-
+# The V language on Debian, with a C compiler so V can still build programs.
+#
+# This image is glibc-based, which is what makes it worth having next
+# to Dockerfile.alpine: a glibc program linked here runs on Debian,
+# Ubuntu, Fedora and their derivatives, where a musl binary from the
+# Alpine image does not.
+#
+# Generated from manifest.json by render.py. Do not edit by hand;
+# edit the manifest and re-render.
 ARG USER=thevlang
+ARG V_REV=master
+
 # Stage 1 - Build the V-compiler
-FROM ${USER}/vlang:alpine-build AS builder
+FROM ${USER}/vlang:debian-build AS builder
+
+# Redeclared here: an ARG declared before the first FROM is out of a
+# build stage's scope, so it has to be repeated to be readable by RUN.
+ARG V_REV
 
 WORKDIR /opt/vlang
 
-RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && make VFLAGS='-cc gcc' && v -version
+# CC=clang, not -cc gcc: debian-build installs clang and no gcc, and V's
+# Makefile passes CC to the bootstrap. Setting VFLAGS='-cc gcc' here fails
+# with "os: failed to find executable `gcc`" before the bootstrap even reaches
+# cc.
+RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && \
+    git -C /opt/vlang fetch --quiet --depth 1 origin "${V_REV}" && \
+    git -C /opt/vlang checkout --quiet FETCH_HEAD && \
+    make CC=clang && v -version
 
-# Stage 2 - Make minimal runtime without git and make 
-#           we still nedd gcc and musl-dev for v to compile;
-#           libexecinfo is needed for the bundled tcc to work;
-#           libc-dev is needed for the various C headers like inttypes.h .
+# Stage 2 - the runtime.
+FROM ${USER}/vlang:debian-base AS runtime
 
-FROM ${USER}/vlang:alpine-base AS runtime
+LABEL org.opencontainers.image.title="thevlang/vlang:debian"
+LABEL org.opencontainers.image.description="The V language on Debian/glibc, with a C compiler so V can still build programs"
+LABEL org.opencontainers.image.source=https://github.com/vlang/docker
+LABEL org.opencontainers.image.licenses=MIT
 
 ENV VFLAGS="-cc gcc"
 
-RUN apk --no-cache add \
-    gcc musl-dev git libc-dev
-# libexecinfo-static libexecinfo-dev : was removed since Alpine 3.17, check if still needed or remove this line
+# Detect the build architecture at build time, so one Dockerfile serves
+# every variant instead of relying on buildx --platform. Alpine and
+# Debian do not spell the same architecture the same way.
+RUN set -eu; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+        amd64) echo "building for amd64" ;; \
+        arm64) echo "building for arm64" ;; \
+        riscv64) echo "building for riscv64" ;; \
+        ppc64el) echo "building for ppc64le" ;; \
+        *) echo >&2 "unsupported architecture: $arch"; exit 1 ;; \
+    esac
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        libc6-dev \
+        git && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy the prebuilt V compiler
 COPY --from=builder /opt/vlang /opt/vlang
 
+# Clamp every timestamp so two builds of the same commit produce the
+# same image. `git clone` and `make` both stamp files with the wall
+# clock, and COPY bakes that into the layers.
+ARG SOURCE_DATE_EPOCH=1735689600
+RUN find /opt/vlang -exec touch -h -d @${SOURCE_DATE_EPOCH} {} + && \
+    newer=$(find /opt/vlang -newermt @${SOURCE_DATE_EPOCH} -print -quit) && \
+    if [ -n "$newer" ]; then \
+        echo >&2 "timestamps not clamped: $newer"; exit 1; \
+    fi && \
+    echo "clamped to $SOURCE_DATE_EPOCH"
+
 WORKDIR /src
+

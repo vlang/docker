@@ -1,0 +1,37 @@
+# Builder image with nix base, used as the builder stage
+# for multi-stage builds. Also the base for the full dev image.
+
+ARG USER=thevlang
+FROM nixos/nix:latest
+
+# Declared inside the build stage on purpose: an ARG declared before
+# the first FROM is not in scope after it, so a global declaration would
+# substitute an empty string into the URL below.
+ARG NIXPKGS_REV=39ad350a0602fa0a58a544344e3e9187526ea45c
+
+ENV NIXPKGS_REV=${NIXPKGS_REV}
+
+LABEL org.opencontainers.image.title="thevlang/vlang:nix-build"
+LABEL org.opencontainers.image.description="Nix toolchain image for building V from source"
+LABEL org.opencontainers.image.source=https://github.com/vlang/docker
+LABEL org.opencontainers.image.licenses=MIT
+LABEL org.opencontainers.image.version=${NIXPKGS_REV}
+
+# `nix-env -f <tarball> -iA ...` installs from one pinned nixpkgs
+# commit, with no channel in the way, so the same NIXPKGS_REV always
+# yields the same store paths.
+RUN nix-env -f "https://github.com/NixOS/nixpkgs/archive/${NIXPKGS_REV}.tar.gz" -iA \
+    git \
+    make \
+    gcc \
+    pkg-config \
+    openssl \
+    sqlite
+
+# `nix-env -i` as root installs into /root/.nix-profile, which the
+# base image does not already put on PATH.
+ENV PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin
+
+WORKDIR /opt/vlang
+
+CMD ["bash"]

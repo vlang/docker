@@ -1,0 +1,262 @@
+{
+  "_comment": [
+    "Every fact about a published image lives here, and nowhere else. The",
+    "Dockerfiles under docker/ are generated from this file by render.py, which",
+    "is why the FROM chain of a runtime image cannot disagree with the variant's",
+    "name: `debian` used to be built `FROM thevlang/vlang:alpine-build`, so",
+    "`:debian` and `:alpine` were the same image and the tag meant only the name.",
+    "With one place to declare the base, that class of bug is not expressible.",
+    "",
+    "`arches` is the architecture list for proposal 2: each runtime image detects",
+    "the build architecture at build time instead of relying on buildx, so a",
+    "local `docker build` on riscv64 is the same code path as CI's.",
+    "",
+    "Regenerate with:  python docker/render.py",
+    "Check with:       python docker/render.py --check   (fails if any file differs)"
+  ],
+  "schema": 1,
+  "organisation": "thevlang",
+  "source": "https://github.com/vlang/docker",
+  "licenses": "MIT",
+  "vroot": "/opt/vlang",
+  "default_v_rev": "master",
+  "arches": {
+    "amd64": {
+      "dpkg": "amd64",
+      "apk": "x86_64",
+      "v": "amd64"
+    },
+    "arm64": {
+      "dpkg": "arm64",
+      "apk": "aarch64",
+      "v": "arm64"
+    },
+    "riscv64": {
+      "dpkg": "riscv64",
+      "apk": "riscv64",
+      "v": "riscv64"
+    },
+    "ppc64le": {
+      "dpkg": "ppc64el",
+      "apk": "ppc64le",
+      "v": "ppc64le"
+    },
+    "s390x": {
+      "dpkg": "s390x",
+      "apk": "s390x",
+      "v": "s390x"
+    },
+    "386": {
+      "dpkg": "i386",
+      "apk": "x86",
+      "v": "386"
+    },
+    "arm": {
+      "dpkg": "armhf",
+      "apk": "armv7",
+      "v": "arm"
+    }
+  },
+  "variants": {
+    "alpine": {
+      "_comment": "musl. The small image, and the one that can link statically.",
+      "base": "alpine:3.18",
+      "pkg_manager": "apk",
+      "layout": "base-and-build",
+      "arches": [
+        "amd64",
+        "arm64"
+      ],
+      "base_packages": [
+        "openssl-dev",
+        "sqlite-dev",
+        "libc6-compat"
+      ],
+      "build_packages": [
+        "git",
+        "openssh-client",
+        "nodejs",
+        "npm",
+        "make",
+        "musl-dev",
+        "valgrind",
+        "clang",
+        "gcc",
+        "gc",
+        "gc-dev",
+        "libx11-dev",
+        "glfw-dev",
+        "freetype-dev",
+        "upx"
+      ],
+      "runtime_packages": [
+        "gcc",
+        "musl-dev",
+        "git",
+        "libc-dev",
+        "gc"
+      ],
+      "build_make": "VFLAGS='-cc gcc'",
+      "runtime_vflags": "-cc gcc",
+      "arch_check": true,
+      "package_comments": {
+        "runtime": [
+          [
+            "gcc musl-dev",
+            "what V shells out to when it compiles a program"
+          ],
+          [
+            "libc-dev",
+            "needed for the various C headers like inttypes.h"
+          ],
+          [
+            "gc",
+            "Boehm GC, which V links against in its default GC mode, so without it every `v run` in this image fails the way the build does"
+          ]
+        ],
+        "build": [
+          [
+            "gc gc-dev",
+            "Boehm GC, which V links against in its default GC mode. Without it `make` gets as far as building ./v and then fails at `@./v -version`, where V populates its module cache for the builtin module with the default GC"
+          ]
+        ]
+      },
+      "description": "The V language on Alpine/musl, with a C compiler so V can still build programs"
+    },
+    "debian": {
+      "_comment": "glibc. A program compiled here runs on Debian, Ubuntu, Fedora.",
+      "base": "debian:12",
+      "pkg_manager": "apt",
+      "layout": "base-and-build",
+      "arches": [
+        "amd64",
+        "arm64",
+        "riscv64",
+        "ppc64le"
+      ],
+      "base_packages": [
+        "libssl-dev",
+        "libsqlite3-dev"
+      ],
+      "build_packages": [
+        "git",
+        "openssh-client",
+        "clang",
+        "llvm-dev",
+        "valgrind",
+        "make",
+        "libx11-dev",
+        "libglfw3-dev",
+        "libfreetype6-dev",
+        "wget",
+        "ca-certificates"
+      ],
+      "build_packages_deferred": {
+        "after": [
+          "wget",
+          "ca-certificates"
+        ],
+        "note": "Get NodeJS setup script",
+        "command": "wget -qO- \"http://deb.nodesource.com/setup_18.x\" | sh -",
+        "packages": [
+          "nodejs"
+        ]
+      },
+      "runtime_packages": [
+        "gcc",
+        "libc6-dev",
+        "git"
+      ],
+      "build_make": "CC=clang",
+      "runtime_vflags": "-cc gcc",
+      "arch_check": true,
+      "build_cc_note": "CC=clang, not -cc gcc: debian-build installs clang and no gcc, and V's Makefile passes CC to the bootstrap. Setting VFLAGS='-cc gcc' here fails with \"os: failed to find executable `gcc`\" before the bootstrap even reaches cc.",
+      "description": "The V language on Debian/glibc, with a C compiler so V can still build programs"
+    },
+    "nix": {
+      "_comment": [
+        "The toolchain comes from one pinned nixpkgs revision, so the toolchain is",
+        "reproducible in a way `apk add` / `apt install` never is. The base image",
+        "still floats (`nixos/nix:latest`), so the rootfs is not."
+      ],
+      "base": "nixos/nix:latest",
+      "pkg_manager": "nix-env",
+      "layout": "nix",
+      "arches": [
+        "amd64",
+        "arm64"
+      ],
+      "nixpkgs_rev": "39ad350a0602fa0a58a544344e3e9187526ea45c",
+      "build_packages": [
+        "git",
+        "make",
+        "gcc",
+        "pkg-config",
+        "openssl",
+        "sqlite"
+      ],
+      "build_make": "VFLAGS='-cc gcc'",
+      "runtime_vflags": "-cc gcc",
+      "package_comments": {
+        "build": [
+          [
+            "make gcc",
+            "V build dependencies"
+          ],
+          [
+            "pkg-config",
+            "lets `nix-shell -p <pkg>` inside the container resolve the development headers of any nixpkgs library"
+          ],
+          [
+            "openssl sqlite",
+            "Libraries V links against when they are present"
+          ]
+        ]
+      },
+      "description": "The V language on a pinned nixpkgs toolchain, with a C compiler so V can still build programs"
+    },
+    "static": {
+      "_comment": [
+        "`FROM scratch` with a fully static V compiler. For `v version`, and as a",
+        "base image for an already-compiled static program - not for building.",
+        "",
+        "This is also the `slim` proposal from IMAGE-ARCHITECTURE.md, and it is why",
+        "there is no separate slim variant: for V there is no form of Rust's slim or",
+        "Go's distroless that this image is not already. Dropping vlib leaves `v`",
+        "unable to find its own stdlib, and dropping the compiler leaves scratch with",
+        "nothing in it. What is left to shrink is size, and 78.6 MB compressed",
+        "against ~100 MB is already the whole of it."
+      ],
+      "base": "scratch",
+      "pkg_manager": "apk",
+      "layout": "static",
+      "arches": [
+        "amd64",
+        "arm64"
+      ],
+      "builder_base": "alpine:3.23",
+      "builder_packages": [
+        "build-base",
+        "git"
+      ],
+      "build_make": "VFLAGS='-prod' CFLAGS='-static' LDFLAGS='-static'",
+      "description": "A static V compiler in a scratch image, for v version and for running pre-compiled programs"
+    }
+  },
+  "_source_date_epoch": [
+    "Proposal 6 from IMAGE-ARCHITECTURE.md. Clamp every mtime in the image to",
+    "this value, the way Go's Dockerfile-linux.template does with",
+    "SOURCE_DATE_EPOCH.",
+    "",
+    "Without it the image differs on every build in ways that never show in a",
+    "diff: `git clone` stamps its files with the wall clock, `make` with the build",
+    "time, and COPY then bakes those into layers. Two builds of the same commit",
+    "therefore produce different digests, so 'reproducible' was an adjective with",
+    "nothing behind it.",
+    "",
+    "Go also asserts the clamp worked, inside the build, rather than trusting the",
+    "`touch`. This does the same: the RUN fails if any file is newer than the",
+    "clamp."
+  ],
+  "source_date_epoch": "1735689600"
+}

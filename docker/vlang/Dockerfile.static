@@ -1,0 +1,59 @@
+# Minimal `scratch`-based image holding a fully static V compiler.
+#
+# What it is for:
+#   * A base image for an already-compiled static V program:
+#       FROM thevlang/vlang:static
+#       COPY --from=build /app/program /usr/local/bin/program
+#       CMD ["program"]
+#   * `v version`.
+#
+# What it is deliberately not: a compiler. There is no C compiler in
+# this image and V shells out to one for every `v run` / `v build`, so
+# those do not work here.
+#
+# Generated from manifest.json by render.py. Do not edit by hand;
+# edit the manifest and re-render.
+ARG V_REV=master
+
+# Stage 1 - build a static V on Alpine/musl.
+FROM alpine:3.23 AS builder
+
+RUN apk --no-cache add build-base git
+
+WORKDIR /opt/vlang
+ARG V_REV
+
+RUN git clone --depth 1 https://github.com/vlang/v . && \
+    git fetch --quiet --depth 1 origin "${V_REV}" && \
+    git checkout --quiet FETCH_HEAD && \
+    make VFLAGS='-prod' CFLAGS='-static' LDFLAGS='-static' && \
+    ./v -version
+
+FROM scratch
+
+COPY --from=builder /opt/vlang/v /opt/vlang/v
+COPY --from=builder /opt/vlang/vlib /opt/vlang/vlib
+COPY --from=builder /opt/vlang/v.mod /opt/vlang/v.mod
+
+
+LABEL org.opencontainers.image.title="thevlang/vlang:static"
+LABEL org.opencontainers.image.description="A static V compiler in a scratch image, for v version and for running pre-compiled programs"
+LABEL org.opencontainers.image.source=https://github.com/vlang/docker
+LABEL org.opencontainers.image.licenses=MIT
+
+# V writes its module cache and temp files under the home directory,
+# which has to be writable - in this image that is /tmp. /opt/vlang
+# goes on PATH so that `v` and the image's CMD resolve.
+ENV PATH=/opt/vlang:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    VEXE=/opt/vlang/v \
+    HOME=/tmp \
+    VMODULES=/tmp/vmodules \
+    VTMP=/tmp/v
+
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+WORKDIR /src
+
+CMD ["v", "version"]

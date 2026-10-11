@@ -1,59 +1,167 @@
-#### Publish tags to docker hub
-name: Deploy nightly build to Dockerhub
+#### Resolve the V version and publish the nightly images
+name: Build and deploy the nightly images
+
+# The images track V master, so `:<dist>` and `:latest` are floating and mean
+# "V master at the time of the last build". They are also the CI containers the
+# V repository runs in, so a broken build here breaks V's own CI.
+#
+# Tags that name a version are built from that version rather than from master,
+# so they are published by the release job in
+# vlang/v/.github/workflows/hub_docker_ci.yml, the only workflow triggered by a
+# V release tag.
 on:
-  workflow_dispatch:
-  # for manually trigger workflow
   push:
     branches:
       - master
-    pull_request:
-      branches: [master] 
+  pull_request:
+    branches: [master]
+    # `docker/**` and the workflow itself cover what this builds, but the nix
+    # pin also lives in nix/ - without it, a PR that changes only the pin
+    # triggers nothing here, while the same change on master does. The
+    # asymmetry is invisible until a broken pin is pushed straight to master.
     paths:
-      - ".github/workflows/nightly_builds.yml"
+      - '.github/workflows/nightly_builds.yml'
+      - 'docker/**'
+      - 'nix/**'
   schedule:
-    - cron: "0 2 * * *" # run at 2 AM UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-${{ github.workflow }}-${{ github.ref }}
+  # A scheduled run that loses the race with a push is better than one cancelled
+  # half way through publishing a multi-platform manifest.
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # Fallbacks: see the note in base.yml.
+  DOCKER_REPOSITORY: ${{ vars.DOCKER_REPOSITORY || 'thevlang' }}
+  PLATFORMS: ${{ vars.PLATFORMS || 'linux/amd64,linux/arm64' }}
 
 jobs:
-  deploy_latest:
-    name: Checkout and deploy
+  deploy:
+    name: Build ${{ matrix.os }}
     runs-on: ubuntu-latest
     strategy:
-      matrix: 
+      matrix:
+        # `nix` needs thevlang/vlang:nix-build from build.yml to have shipped at
+        # least once, exactly as alpine and debian need their -build images.
         os:
           - alpine
           - debian
+          - nix
+        # One broken variant must not stop the other two being published.
+      fail-fast: false
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_TOKEN }}
-      - name: generate tags conditionally
-        id: gen_tags
         run: |
-          if [[ ${{ matrix.os }} == 'debian' ]]; then
-            echo 'TAGS=${{ vars.DOCKER_REPOSITORY }}/vlang:latest,${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}' >> $GITHUB_OUTPUT
+          docker buildx create --name gh-builder --driver docker-container --use
+          docker buildx inspect --bootstrap
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Generate the runtime tags
+        id: tags
+        run: |
+          repo="$DOCKER_REPOSITORY/vlang"
+          os="${{ matrix.os }}"
+          # debian is the default variant, so it owns the floating tags.
+          if [ "$os" = "debian" ]; then
+            tags="$repo:latest,$repo:debian"
           else
-            echo 'TAGS=${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}' >> $GITHUB_OUTPUT
+            tags="$repo:$os"
           fi
-      - uses: docker/build-push-action@v4
-        name: Build and deploy v image
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+        env:
+          DOCKER_REPOSITORY: ${{ env.DOCKER_REPOSITORY }}
+
+      - name: Build and deploy the runtime image
+        uses: docker/build-push-action@v6
         with:
-          platforms: ${{ vars.PLATFORMS }}
-          tags: ${{ steps.gen_tags.outputs.TAGS }}
+          context: .
           file: docker/vlang/Dockerfile.${{ matrix.os }}
+          builder: gh-builder
+          platforms: ${{ env.PLATFORMS }}
+          build-args: |
+            USER=${{ env.DOCKER_REPOSITORY }}
+            V_REV=master
+          labels: |
+            org.opencontainers.image.title=${{ env.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}
+            org.opencontainers.image.source=https://github.com/vlang/docker
+            org.opencontainers.image.licenses=MIT
           push: ${{ github.event_name != 'pull_request' }}
-          build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
-      - uses: docker/build-push-action@v4
-        name: Build and deploy developer build
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Build and deploy the developer image
+        uses: docker/build-push-action@v6
         with:
-          platforms: ${{ vars.PLATFORMS }}
-          tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-dev
+          context: .
           file: docker/vlang/Dockerfile.${{ matrix.os }}.dev-full
-          build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
+          builder: gh-builder
+          platforms: ${{ env.PLATFORMS }}
+          build-args: |
+            USER=${{ env.DOCKER_REPOSITORY }}
+            V_REV=master
+          labels: |
+            org.opencontainers.image.title=${{ env.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-dev
+            org.opencontainers.image.source=https://github.com/vlang/docker
+            org.opencontainers.image.licenses=MIT
           push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-dev
+
+  # The static image needs no base image from this repo, so it does not belong in
+  # the matrix above.
+  deploy_static:
+    name: Build static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        run: |
+          docker buildx create --name gh-builder --driver docker-container --use
+          docker buildx inspect --bootstrap
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and deploy the static image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/vlang/Dockerfile.static
+          builder: gh-builder
+          platforms: ${{ env.PLATFORMS }}
+          build-args: |
+            V_REV=master
+          # Only :static is published here. A version tag would come from the
+          # release job in vlang/v, which passes V_REV=<tag> - but that job does
+          # not build this file yet, and until vlang/v#29883 merges there is no
+          # :static-<version> anywhere.
+          labels: |
+            org.opencontainers.image.title=${{ env.DOCKER_REPOSITORY }}/vlang:static
+            org.opencontainers.image.description="Scratch image with a static V compiler; a base for static V programs, not a build environment"
+            org.opencontainers.image.source=https://github.com/vlang/docker
+            org.opencontainers.image.licenses=MIT
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/vlang:static

@@ -1,24 +1,104 @@
-#### Publish to docker hub
-name: Build and deploy Ubuntu builder image
+#### Build the ubuntu images on every supported architecture
+name: Build and deploy the Ubuntu images
+
+# Ubuntu is not published as a runtime variant. These two images exist because
+# the V repository's own CI runs in them: see the `docker-ubuntu-musl` job in
+# vlang/v/.github/workflows/docker_ci.yml, which uses thevlang/vlang:ubuntu-build
+# as its container. They have to keep existing and stay current.
+#
+# :ubuntu-build was amd64-only until now. It was built with
+# docker/build-push-action@v1, which has no buildx support, so no arm64 manifest
+# was ever pushed - and :ubuntu-base had not been rebuilt in five years.
 on:
   push:
     branches:
-    - master
+      - master
     paths:
       - '.github/workflows/build_ubuntu.yml'
+      - 'docker/base/os/ubuntu/Dockerfile.*'
+      - 'docker/vlang/Dockerfile.ubuntu.build'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/build_ubuntu.yml'
+      - 'docker/base/os/ubuntu/Dockerfile.*'
       - 'docker/vlang/Dockerfile.ubuntu.build'
   workflow_dispatch:
 
+concurrency:
+  group: ubuntu-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Fallbacks: see the note in base.yml.
+  DOCKER_REPOSITORY: ${{ vars.DOCKER_REPOSITORY || 'thevlang' }}
+  PLATFORMS: ${{ vars.PLATFORMS || 'linux/amd64,linux/arm64' }}
+
 jobs:
-  deploy:
-    name: Checkout and deploy
+  resolve:
+    name: Resolve the V version to label with
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.vver.outputs.version }}
     steps:
-      - uses: actions/checkout@v1  
-      - uses: docker/build-push-action@v1
+      - name: Read the latest release tag from vlang/v
+        id: vver
+        run: |
+          set -euo pipefail
+          version=$(git ls-remote --tags --refs --sort=-v:refname \
+            https://github.com/vlang/v 'refs/tags/[0-9]*' | head -n1 | sed 's#.*refs/tags/##')
+          if [ -z "$version" ]; then
+            echo "could not resolve a V release tag"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "V version: $version"
+
+  deploy:
+    name: Build ${{ matrix.image }}
+    needs: resolve
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # In this order because :ubuntu-build stands on :ubuntu-base.
+        include:
+          - image: ubuntu-base
+            file: docker/base/os/ubuntu/Dockerfile.focal
+          - image: ubuntu-build
+            file: docker/vlang/Dockerfile.ubuntu.build
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        run: |
+          docker buildx create --name gh-builder --driver docker-container --use
+          docker buildx inspect --bootstrap
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
         with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_TOKEN }}
-            repository: thevlang/vlang
-            tags: ubuntu-build
-            dockerfile: ${{github.workspace}}/docker/vlang/Dockerfile.ubuntu.build
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and deploy ${{ matrix.image }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          builder: gh-builder
+          platforms: ${{ env.PLATFORMS }}
+          labels: |
+            org.opencontainers.image.title=${{ env.DOCKER_REPOSITORY }}/vlang:${{ matrix.image }}
+            org.opencontainers.image.source=https://github.com/vlang/docker
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.version=${{ needs.resolve.outputs.version }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/vlang:${{ matrix.image }}

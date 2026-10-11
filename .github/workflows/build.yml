@@ -1,41 +1,97 @@
-#### Publish to docker hub
-name: Build and deploy All builder image
+#### Publish the builder images to docker hub
+name: Build and deploy all builder images
+
+# These are the images with every build dependency in them: they are the second
+# stage of the multi-stage runtime images, and the container that CI builds V in.
+# They contain no V of their own.
 on:
   push:
     branches:
-    - master
-    pull_request:
-      branches: [master] 
+      - master
     paths:
       - '.github/workflows/build.yml'
-      - 'docker/vlang/Dockerfile.alpine.build'
-      - 'docker/vlang/Dockerfile.debian.build'
+      - 'docker/vlang/Dockerfile.*.build'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/build.yml'
+      - 'docker/vlang/Dockerfile.*.build'
   workflow_dispatch:
 
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Fallbacks: see the note in base.yml.
+  DOCKER_REPOSITORY: ${{ vars.DOCKER_REPOSITORY || 'thevlang' }}
+  PLATFORMS: ${{ vars.PLATFORMS || 'linux/amd64,linux/arm64' }}
+
 jobs:
+  resolve:
+    name: Resolve the V version to label with
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.vver.outputs.version }}
+    steps:
+      - name: Read the latest release tag from vlang/v
+        id: vver
+        run: |
+          set -euo pipefail
+          version=$(git ls-remote --tags --refs --sort=-v:refname \
+            https://github.com/vlang/v 'refs/tags/[0-9]*' | head -n1 | sed 's#.*refs/tags/##')
+          if [ -z "$version" ]; then
+            echo "could not resolve a V release tag"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "V version: $version"
+
   deploy:
-    name: Checkout and deploy
+    name: Build ${{ matrix.os }}-build
+    needs: resolve
     runs-on: ubuntu-latest
     strategy:
-      matrix: 
+      matrix:
         os:
           - alpine
           - debian
+          - nix
+      # A broken builder must not stop the other variants being published.
+      fail-fast: false
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        run: |
+          docker buildx create --name gh-builder --driver docker-container --use
+          docker buildx inspect --bootstrap
+
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
         with:
-            username: ${{ secrets.DOCKER_USERNAME }}
-            password: ${{ secrets.DOCKER_TOKEN }}
-      - uses: docker/build-push-action@v4
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and deploy the builder image
+        uses: docker/build-push-action@v6
         with:
-            platforms: ${{ vars.PLATFORMS}}
-            tags: ${{ vars.DOCKER_REPOSITORY }}/vlang:${{ matrix.os}}-build
-            push: ${{ github.event_name != 'pull_request' }}
-            file: docker/vlang/Dockerfile.${{ matrix.os }}.build
-            build-args: "USER=${{vars.DOCKER_REPOSITORY}}"
+          context: .
+          file: docker/vlang/Dockerfile.${{ matrix.os }}.build
+          builder: gh-builder
+          platforms: ${{ env.PLATFORMS }}
+          build-args: USER=${{ env.DOCKER_REPOSITORY }}
+          labels: |
+            org.opencontainers.image.title=${{ env.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-build
+            org.opencontainers.image.source=https://github.com/vlang/docker
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.version=${{ needs.resolve.outputs.version }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.DOCKER_REPOSITORY }}/vlang:${{ matrix.os }}-build

@@ -1,0 +1,85 @@
+#### Lint the workflows
+name: Lint the GitHub Actions workflows
+
+# A workflow with a structural mistake is not a failing check - GitHub refuses to
+# register it, so it produces a run with zero jobs named after the file path, and
+# nothing looks wrong. That happened here: `strategy:` had `os:` directly under it
+# instead of under `matrix:`, which two of these files had, and they silently
+# published nothing.
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/*.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/*.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: workflow-lint-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run actionlint
+        uses: docker://rhysd/actionlint:1.7.7
+        with:
+          args: -shellcheck=
+        # Check the exit code, because the Docker action does not fail the step
+        # on a non-zero exit from the contained binary by itself.
+        continue-on-error: false
+
+      - name: Confirm actionlint actually saw the files
+        run: |
+          set -euo pipefail
+          count=$(ls .github/workflows/*.yml | wc -l)
+          echo "workflows: $count"
+          if [ "$count" -eq 0 ]; then
+            echo "no workflow files found - is the checkout empty?" >&2
+            exit 1
+          fi
+
+      # The Dockerfiles are generated from docker/manifest.json. A hand-edited
+      # Dockerfile silently diverges, and the two bugs that came from exactly
+      # that are why this exists: `debian` built FROM alpine-build (so `:debian`
+      # and `:alpine` were the same image), and the missing Boehm GC on Alpine.
+      # Both files looked individually plausible.
+      - name: Dockerfiles match the manifest
+        run: |
+          set -euo pipefail
+          # Installed explicitly: `python3` is not in the ubuntu:24.04 base image,
+          # and the runner having it is not something to rely on for a check that
+          # is supposed to fail loudly.
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends python3
+          python3 docker/render.py --check
+
+      # A file with no trailing newline is a POSIX text-file convention that
+      # matters here: POSIX defines a text file as ending in a newline, and a
+      # change to the last line of one that does not shows
+      # "\ No newline at end of file" in the diff, which is noise on every
+      # subsequent edit. All nine Dockerfiles in this repository had it, which
+      # is what a reviewer flagged.
+      - name: Every Dockerfile ends with a newline
+        run: |
+          set -euo pipefail
+          bad=()
+          while IFS= read -r f; do
+            [ -n "$(tail -c 1 "$f")" ] && bad+=("$f")
+          done < <(find docker -type f -name 'Dockerfile*' | sort)
+          if [ "${#bad[@]}" -gt 0 ]; then
+            echo "::error::no trailing newline in: ${bad[*]}"
+            printf '%s\n' "${bad[@]}"
+            exit 1
+          fi
+          echo "all $(find docker -type f -name 'Dockerfile*' | wc -l) Dockerfiles end with a newline"

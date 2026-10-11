@@ -1,14 +1,28 @@
 ARG USER=thevlang
+# Generates a development image based on Alpine, with V
+# compiled in place so the container is a working checkout rather
+# than just a compiler.
+#
+# Generated from manifest.json by render.py. Do not edit by hand.
+FROM @@USERN@@/vlang:alpine-build
 
-# Generates development image based on Alpine, with V compiled using clang
-FROM ${USER}/vlang:alpine-build
-
+LABEL org.opencontainers.image.title="thevlang/vlang:alpine-dev"
+LABEL org.opencontainers.image.description="A working V checkout on alpine, for working on V itself"
+LABEL org.opencontainers.image.source=https://github.com/vlang/docker
+LABEL org.opencontainers.image.licenses=MIT
 LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
+
+# Which V revision is built; see Dockerfile.alpine.
+ARG V_REV=master
+ARG V_REV
 
 WORKDIR /opt/vlang
 
 RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && \
+    git -C /opt/vlang fetch --quiet --depth 1 origin "${V_REV}" && \
+    git -C /opt/vlang checkout --quiet FETCH_HEAD && \
     make VFLAGS='-cc gcc' && v -version && \
     mkdir /src
 
 WORKDIR /src
+

@@ -1,17 +1,18 @@
-# This is the dockerfile for generating base images for Alpine
+# This is the dockerfile for generating base images for alpine
 # contains the minimal dependencies needed for V to run
 FROM alpine:3.18
 
-LABEL maintainer="helto4real <helto4real@joysoftware.xyz>"
+LABEL org.opencontainers.image.source=https://github.com/vlang/docker
+LABEL org.opencontainers.image.title="thevlang/vlang:alpine-base"
 
 WORKDIR /opt/vlang
 
-ENV VVV  /opt/vlang
+ENV VVV /opt/vlang
 ENV PATH /opt/vlang:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 RUN mkdir -p /opt/vlang && ln -s /opt/vlang/v /usr/bin/v
 
 RUN apk update && \
-    # Default base depenencies
-    apk add --no-cache openssl-dev sqlite-dev libc6-compat 
+    # Default base dependencies
+    apk add --no-cache openssl-dev sqlite-dev libc6-compat
 

@@ -1,0 +1,30 @@
+ARG USER=thevlang
+# Everything the toolchain image has, plus the full V source
+# tree built in place, so the container is a working V checkout
+# rather than just a compiler. Use it to hack on V itself:
+#
+#   docker run --rm -it -v "$PWD":/src thevlang/vlang:nix-dev sh
+#
+# Generated from manifest.json by render.py. Do not edit by hand.
+FROM ${USER}/vlang:nix-build
+
+LABEL org.opencontainers.image.title="thevlang/vlang:nix-dev"
+LABEL org.opencontainers.image.description="A working V checkout on nix, for working on V itself"
+LABEL org.opencontainers.image.source=https://github.com/vlang/docker
+LABEL org.opencontainers.image.licenses=MIT
+LABEL org.opencontainers.image.authors="helto4real <helto4real@joysoftware.xyz>, Sandro Martini <sandro.martini@gmail.com>"
+
+# Which V revision is built; see Dockerfile.nix.
+ARG V_REV=master
+ARG V_REV
+
+WORKDIR /opt/vlang
+
+RUN git clone --depth 1 https://github.com/vlang/v . && \
+    git fetch --quiet --depth 1 origin "${V_REV}" && \
+    git checkout --quiet FETCH_HEAD && \
+    make VFLAGS='-cc gcc' && v -version && \
+    mkdir /src
+
+WORKDIR /src
+

@@ -1,30 +1,67 @@
-# Minimal image for compiling V programs
-# - No UI dependencies
-# - gcc compiler (only works on alpine)
-
+# The V language on Alpine.
+#
+# Generated from manifest.json by render.py. Do not edit by hand;
+# edit the manifest and re-render.
 ARG USER=thevlang
+ARG V_REV=master
 
 # Stage 1 - Build the V-compiler
 FROM ${USER}/vlang:alpine-build AS builder
 
+# Redeclared here: an ARG declared before the first FROM is out of a
+# build stage's scope, so it has to be repeated to be readable by RUN.
+ARG V_REV
+
 WORKDIR /opt/vlang
 
-RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && make VFLAGS='-cc gcc' && v -version
+RUN git clone --depth 1 https://github.com/vlang/v /opt/vlang && \
+    git -C /opt/vlang fetch --quiet --depth 1 origin "${V_REV}" && \
+    git -C /opt/vlang checkout --quiet FETCH_HEAD && \
+    make VFLAGS='-cc gcc' && v -version
 
-# Stage 2 - Make minimal runtime without git and make 
-#           we still nedd gcc and musl-dev for v to compile;
-#           libexecinfo is needed for the bundled tcc to work;
-#           libc-dev is needed for the various C headers like inttypes.h .
-
+# Stage 2 - the runtime.
 FROM ${USER}/vlang:alpine-base AS runtime
+
+LABEL org.opencontainers.image.title="thevlang/vlang:alpine"
+LABEL org.opencontainers.image.description="The V language on Alpine/musl, with a C compiler so V can still build programs"
+LABEL org.opencontainers.image.source=https://github.com/vlang/docker
+LABEL org.opencontainers.image.licenses=MIT
 
 ENV VFLAGS="-cc gcc"
 
+# Detect the build architecture at build time, so one Dockerfile serves
+# every variant instead of relying on buildx --platform. Alpine and
+# Debian do not spell the same architecture the same way.
+RUN set -eu; \
+    arch="$(apk --print-arch)"; \
+    case "$arch" in \
+        x86_64) echo "building for amd64" ;; \
+        aarch64) echo "building for arm64" ;; \
+        *) echo >&2 "unsupported architecture: $arch"; exit 1 ;; \
+    esac
+
 RUN apk --no-cache add \
-    gcc musl-dev git libc-dev
-# libexecinfo-static libexecinfo-dev : was removed since Alpine 3.17, check if still needed or remove this line
+    gcc \
+    musl-dev \
+    git \
+    # needed for the various C headers like inttypes.h
+    libc-dev \
+    # Boehm GC, which V links against in its default GC mode, so without it every `v run` in this image fails the way the build does
+    gc
 
 # Copy the prebuilt V compiler
 COPY --from=builder /opt/vlang /opt/vlang
 
+# Clamp every timestamp so two builds of the same commit produce the
+# same image. `git clone` and `make` both stamp files with the wall
+# clock, and COPY bakes that into the layers.
+ARG SOURCE_DATE_EPOCH=1735689600
+RUN find /opt/vlang -exec touch -h -d @${SOURCE_DATE_EPOCH} {} + && \
+    newer=$(find /opt/vlang -newermt @${SOURCE_DATE_EPOCH} -print -quit) && \
+    if [ -n "$newer" ]; then \
+        echo >&2 "timestamps not clamped: $newer"; exit 1; \
+    fi && \
+    echo "clamped to $SOURCE_DATE_EPOCH"
+
 WORKDIR /src
+
